@@ -1,0 +1,20 @@
+---
+# tasks/main.yml
+- name: Copy system_info.sh script to /etc/init.d
+  copy:
+    src: system_info.sh
+    dest: /etc/init.d/system_info.sh
+    mode: '0755'  # Ensure it's executable
+    owner: root
+    group: root
+
+- name: Add cron job to run system_info.sh on reboot
+  cron:
+    name: "Run system_info.sh on reboot"
+    special_time: reboot
+    job: "/etc/init.d/system_info.sh"
+    state: present
+
+- name: Run system_info.sh immediately
+  command: /etc/init.d/system_info.sh
+  become: true

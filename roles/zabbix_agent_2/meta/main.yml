@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  author: tungdv
+  role_name: zabbix_agent_2
+  description: Ansible role to configure, restart and enabled Zabbix Agent 2
+  license: MIT
+  min_ansible_version: 2.9
+
+dependencies: []
+

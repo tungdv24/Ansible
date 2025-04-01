@@ -1,0 +1,79 @@
+---
+- name: Create sudo group
+  group:
+    name: sudo
+    state: present
+  tags:
+    - users
+    - accounts
+
+- name: Update accounts
+  user:
+    name: "{{ item.name }}"
+    groups: "{{ item.groups }}"
+    generate_ssh_key: yes
+    append: yes
+    state: present
+    shell: /bin/bash
+  loop: "{{ users }}"
+  when: item.servers and inventory_hostname in item.servers
+  tags:
+    - users
+    - accounts
+
+- name: Allow sudo to execute in non-TTY environments
+  lineinfile:
+    path: /etc/sudoers
+    regexp: "^Defaults    requiretty$"
+    line: "#Defaults    requiretty"
+  tags:
+    - users
+    - accounts
+
+- name: Allow specific users to use sudo without a password
+  lineinfile:
+    path: /etc/sudoers
+    regexp: "^{{ item.name }} "
+    line: "{{ item.name }} ALL=(ALL) NOPASSWD: ALL"
+    state: present
+    validate: 'visudo -cf %s'
+  loop: "{{ users }}"
+  when: item.servers and inventory_hostname in item.servers
+  tags:
+    - users
+    - accounts
+
+- name: Update new authorized_keys
+  copy:
+    src: "public_keys/{{ item.0.name }}.pub"
+    dest: "/home/{{ item.0.name }}/.ssh/authorized_keys"
+    mode: "0644"
+  with_subelements:
+    - "{{ users }}"
+    - authorized_keys
+  when: item.0.servers and inventory_hostname in item.0.servers and item.0.name != "deploy"
+  tags:
+    - users
+    - accounts
+
+- name: Set owner and permissions for authorized_keys
+  file:
+    path: "/home/{{ item.0.name }}/.ssh/authorized_keys"
+    owner: "{{ item.0.name }}"
+    group: "{{ item.0.name }}"
+    mode: "0600"
+  with_subelements:
+    - "{{ users }}"
+    - authorized_keys
+  when: item.0.servers and inventory_hostname in item.0.servers and item.0.name != "deploy"
+  tags:
+    - users
+    - accounts
+
+- name: Restart SSH service
+  service:
+    name: sshd
+    state: restarted
+  tags:
+    - users
+    - accounts

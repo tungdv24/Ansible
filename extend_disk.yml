@@ -1,0 +1,32 @@
+---
+- name: Extend disk sda2 on Ubuntu and sda3 on CentOS
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install growpart on Ubuntu
+      when: ansible_facts.os_family == "Debian"
+      apt:
+        name: cloud-guest-utils
+        state: present
+
+    - name: Install growpart on CentOS
+      when: ansible_facts.os_family == "RedHat"
+      yum:
+        name: cloud-utils-growpart
+        state: present
+
+    - name: Resize partition sda2 using growpart on Ubuntu
+      when: ansible_facts.os_family == "Debian"
+      command: growpart /dev/sda 2
+
+    - name: Resize partition sda3 using growpart on CentOS
+      when: ansible_facts.os_family == "RedHat"
+      command: growpart /dev/sda 3
+
+    - name: Resize the filesystem on sda2 for ext4 (Ubuntu)
+      when: ansible_facts.os_family == "Debian"
+      command: resize2fs /dev/sda2
+
+    - name: Resize the filesystem on sda3 for XFS (CentOS)
+      when: ansible_facts.os_family == "RedHat"
+      command: xfs_growfs /dev/sda3

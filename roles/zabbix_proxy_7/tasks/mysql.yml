@@ -1,0 +1,42 @@
+---
+# mysql.yml
+
+- name: Install MySQL server (MariaDB)
+  apt:
+    name: mariadb-server
+    state: present
+
+- name: Start MariaDB service
+  service:
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Set root password and secure MariaDB installation
+  shell: |
+    mysql -uroot <<EOF
+    ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_password }}';
+    DELETE FROM mysql.user WHERE User='';
+    DROP DATABASE IF EXISTS test;
+    DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+    FLUSH PRIVILEGES;
+    EOF
+
+- name: Create Zabbix Proxy database and user
+  shell: |
+    mysql -uroot -p'{{ mysql_root_password }}' <<EOF
+    CREATE DATABASE IF NOT EXISTS {{ zabbix_db_name }} CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+    CREATE USER IF NOT EXISTS '{{ zabbix_db_user }}'@'localhost' IDENTIFIED BY '{{ zabbix_db_password }}';
+    GRANT ALL PRIVILEGES ON {{ zabbix_db_name }}.* TO '{{ zabbix_db_user }}'@'localhost';
+    SET GLOBAL log_bin_trust_function_creators = 1;
+    FLUSH PRIVILEGES;
+    EOF
+
+- name: Import initial schema for Zabbix Proxy
+  shell: |
+    cat /usr/share/zabbix-sql-scripts/mysql/proxy.sql | mysql --default-character-set=utf8mb4 -u{{ zabbix_db_user }} -p'{{ zabbix_db_password }}' {{ zabbix_db_name }}
+    
+
+- name: Disable log_bin_trust_function_creators
+  shell: |
+    mysql -uroot -p'{{ mysql_root_password }}' -e "SET GLOBAL log_bin_trust_function_creators = 0;"

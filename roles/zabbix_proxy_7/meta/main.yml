@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  role_name: zabbix_proxy_7
+  author: tungdv
+  description: An Ansible role to install Zabbix Proxy 7
+  license: MIT
+  min_ansible_version: 2.1
+
+dependencies: []
+

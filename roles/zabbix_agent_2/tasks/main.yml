@@ -1,0 +1,16 @@
+---
+- name: Ensure Zabbix agent configuration file is updated
+  lineinfile:
+    path: /etc/zabbix/zabbix_agent2.conf
+    regexp: '^Server='
+    line: "Server={{ zabbix_server }}"
+    state: present
+  notify:
+    - Restart Zabbix agent service
+
+- name: Enable and start Zabbix agent service
+  systemd:
+    name: zabbix-agent2
+    enabled: true
+    state: started
+

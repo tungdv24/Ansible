@@ -1,0 +1,56 @@
+---
+# main.yml
+
+- name: Update apt repository
+  apt:
+    update_cache: yes
+
+- name: Install wget for downloading Zabbix repo
+  apt:
+    name: wget
+    state: present
+
+- name: Download Zabbix release package
+  get_url:
+    url: "{{ zabbix_release_url }}"
+    dest: "/tmp/zabbix-release.deb"
+
+- name: Install Zabbix release package
+  apt:
+    deb: "/tmp/zabbix-release.deb"
+
+- name: Update apt repository after adding Zabbix repo
+  apt:
+    update_cache: yes
+
+- name: Install Zabbix Proxy and SQL scripts
+  apt:
+    name:
+      - zabbix-proxy-mysql
+      - zabbix-sql-scripts
+    state: present
+
+# This will include MySQL tasks from mysql.yml
+- name: Include MySQL tasks
+  include_tasks: mysql.yml
+
+- name: Update Zabbix Proxy configuration
+  lineinfile:
+    path: /etc/zabbix/zabbix_proxy.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^#?ProxyMode=', line: 'ProxyMode=1' }
+    - { regexp: '^#?Server=', line: 'Server={{ zabbix_server_ip }}' }
+    - { regexp: '^#?Hostname=', line: 'Hostname=proxy' }
+    - { regexp: '^#?DBHost=', line: 'DBHost=localhost' }
+    - { regexp: '^#?DBName=', line: 'DBName={{ zabbix_db_name }}' }
+    - { regexp: '^#?DBUser=', line: 'DBUser={{ zabbix_db_user }}' }
+    - { regexp: '^#?DBPassword=', line: 'DBPassword={{ zabbix_db_password }}' }
+    - { regexp: '^#?ListenPort=', line: 'ListenPort={{ zabbix_server_port }}' }
+- name: Restart and enable Zabbix Proxy service
+  service:
+    name: zabbix-proxy
+    state: restarted
+    enabled: true
+

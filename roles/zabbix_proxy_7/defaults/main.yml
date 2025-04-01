@@ -1,0 +1,10 @@
+---
+mysql_root_password: "tung2411"         # Set your root password
+zabbix_db_name: "zabbix_proxy"
+zabbix_db_user: "zabbix"
+zabbix_db_password: "zabbix"              # Set Zabbix DB password
+zabbix_server_ip: "192.168.10.196"
+zabbix_server_port: 10051
+zabbix_release_url: "https://repo.zabbix.com/zabbix/7.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_7.0%2Bubuntu22.04_all.deb"
+
+
