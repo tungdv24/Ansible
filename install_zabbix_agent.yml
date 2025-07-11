@@ -1,0 +1,6 @@
+---
+- hosts: all
+  become: yes 
+  roles:
+    - install_zabbix_agent
+

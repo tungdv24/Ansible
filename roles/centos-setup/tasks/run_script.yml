@@ -1,0 +1,11 @@
+- name: Copy script to /mnt
+  copy:
+    src: "{{ script_to_run }}"
+    dest: "/mnt/{{ script_to_run }}"
+    mode: '0755'
+
+- name: Execute script with environment variables
+  command: "/mnt/{{ script_to_run }}"
+  environment:
+    TELEGRAM_TOKEN: "{{ TELEGRAM_TOKEN }}"
+    TELEGRAM_CHAT_ID: "{{ TELEGRAM_CHAT_ID }}"

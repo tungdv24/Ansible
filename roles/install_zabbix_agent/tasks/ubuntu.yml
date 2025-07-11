@@ -1,0 +1,83 @@
+---
+- name: Download Zabbix repository package
+  get_url:
+    url: "https://repo.zabbix.com/zabbix/{{ zabbix_version }}/ubuntu/pool/main/z/zabbix-release/zabbix-release_latest_{{ zabbix_version }}+ubuntu{{ ansible_distribution_version.split('.')[0] }}.04_all.deb"
+    dest: "/tmp/zabbix-release_latest_{{ zabbix_version }}+ubuntu{{ ansible_distribution_version.split('.')[0] }}.04_all.deb"
+
+- name: Install Zabbix repository package
+  command: "dpkg -i /tmp/zabbix-release_latest_{{ zabbix_version }}+ubuntu{{ ansible_distribution_version.split('.')[0] }}.04_all.deb"
+  register: dpkg_install
+  ignore_errors: yes
+
+- name: Fix missing dependencies (if needed)
+  apt:
+    update_cache: yes
+    name: "{{ item }}"
+  with_items:
+    - zabbix-agent
+    - dependencies
+  when: dpkg_install is failed
+
+- name: Update APT cache
+  apt:
+    update_cache: yes
+
+- name: Install Zabbix Agent
+  apt:
+    name: zabbix-agent
+    state: present
+
+- name: Configure Zabbix Agent to use specified Zabbix server
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "^Server=.*"
+    line: "Server={{ zabbix_server }}"
+    backup: yes
+
+- name: Configure Zabbix Agent to use specified Zabbix ServerActive
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "^ServerActive=.*"
+    line: "ServerActive={{ zabbix_server }}"
+    backup: yes
+
+- name: Configure Zabbix Agent hostname
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: "^Hostname=.*"
+    line: "Hostname={{ inventory_hostname }}"
+    backup: yes
+
+- name: Ensure Zabbix directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - /etc/zabbix/scripts
+    - /etc/zabbix/zabbix_agentd.d
+
+- name: Copy scripts to /etc/zabbix/scripts
+  copy:
+    src: "scripts/"
+    dest: "/etc/zabbix/scripts/"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy configuration files to /etc/zabbix/zabbix_agentd.d
+  copy:
+    src: "zabbix_agentd.d/"
+    dest: "/etc/zabbix/zabbix_agentd.d/"
+    owner: root
+    group: root
+    mode: '0644'
+
+
+- name: Restart and enable Zabbix Agent
+  systemd:
+    name: zabbix-agent
+    enabled: "{{ zabbix_agent_enabled | default(true) }}"
+    state: "{{ zabbix_agent_state | default('restarted') }}"

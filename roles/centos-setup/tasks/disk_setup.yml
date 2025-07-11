@@ -1,0 +1,63 @@
+- name: Ensure growpart utility is installed
+  package:
+    name: cloud-utils-growpart
+    state: present
+
+- name: Check if /dev/sda exists
+  stat:
+    path: /dev/sda
+  register: sda_check
+
+- name: Grow partition on /dev/sda3
+  command: growpart /dev/sda 3
+  when: sda_check.stat.exists
+
+- name: XFS grow on /dev/sda3
+  command: xfs_growfs /dev/sda3
+  when: sda_check.stat.exists
+
+
+- name: Rescan disks
+  shell: |
+    echo "- - -" > /sys/class/scsi_host/host0/scan
+    echo "- - -" > /sys/class/scsi_host/host1/scan
+    echo "- - -" > /sys/class/scsi_host/host2/scan
+  become: true
+  ignore_errors: true  # In case some hosts don't exist
+
+- name: Check if /dev/sdb exists
+  stat:
+    path: /dev/sdb
+  register: sdb_check
+
+- name: Partition and format /dev/sdb1
+  shell: |
+    echo -e "n\np\n1\n\n\nw" | fdisk /dev/sdb
+    partprobe /dev/sdb
+    mkfs.ext4 /dev/sdb1
+  when: sdb_check.stat.exists
+
+- name: Create /data directory
+  file:
+    path: /data
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  when: sdb_check.stat.exists
+
+- name: Retrieve UUID for /dev/sdb1
+  command: blkid -s UUID -o value /dev/sdb1
+  register: sdb1_uuid
+  when: sdb_check.stat.exists
+  failed_when: sdb1_uuid.stdout is not defined
+
+- name: Mount /dev/sdb1 to /data
+  mount:
+    path: /data
+    src: "UUID={{ sdb1_uuid.stdout }}"
+    fstype: ext4
+    state: mounted
+  when: sdb_check.stat.exists
+
+

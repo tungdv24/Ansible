@@ -1,0 +1,16 @@
+- name: Update Zabbix server IP in zabbix_agent.conf
+  lineinfile:
+    path: /etc/zabbix/zabbix_agentd.conf
+    regexp: '^Server='
+    line: "Server={{ zabbix_server_ip }}"
+    backup: yes
+
+- name: Ensure Zabbix Agent service is restarted
+  service:
+    name: zabbix-agent
+    state: restarted
+
+- name: Ensure Zabbix Agent service is enabled
+  service:
+    name: zabbix-agent
+    enabled: true

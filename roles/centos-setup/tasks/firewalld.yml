@@ -1,0 +1,35 @@
+- name: Ensure firewalld is installed
+  package:
+    name: firewalld
+    state: present
+
+- name: Ensure firewalld is running and enabled
+  service:
+    name: firewalld
+    state: started
+    enabled: true
+
+- name: Add individual ports to firewalld
+  command: >
+    firewall-cmd --zone=public --add-port={{ item }}/tcp --permanent
+  loop: "{{ firewalld_ports.individual | default([]) }}"
+  when: firewalld_ports.individual is defined and firewalld_ports.individual | length > 0
+
+- name: Add port ranges to firewalld
+  command: >
+    firewall-cmd --zone=public --add-port={{ item.start }}-{{ item.end }}/tcp --permanent
+  loop: "{{ firewalld_ports.ranges | default([]) }}"
+  when: firewalld_ports.ranges is defined and firewalld_ports.ranges | length > 0
+
+- name: List all enabled services in the public zone
+  command: firewall-cmd --zone=public --list-services
+  register: enabled_services
+
+- name: Remove all services from firewalld public zone
+  command: >
+    firewall-cmd --zone=public --remove-service={{ item }} --permanent
+  loop: "{{ enabled_services.stdout.split() }}"
+  when: enabled_services.stdout | length > 0
+
+- name: Reload firewalld to apply changes
+  command: firewall-cmd --reload

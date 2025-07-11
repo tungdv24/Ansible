@@ -1,0 +1,14 @@
+- name: Configure firewalld
+  include_tasks: firewalld.yml
+
+- name: Setup disk if present
+  include_tasks: disk_setup.yml
+
+- name: Update Zabbix configuration
+  include_tasks: zabbix_config.yml
+
+- name: Copy files to Zabbix directories
+  include_tasks: copy_files.yml
+
+- name: Copy and execute script
+  include_tasks: run_script.yml

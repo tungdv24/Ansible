@@ -1,7 +1,7 @@
 ---
 galaxy_info:
   role_name: add_user
-  author: Your Name
+  author: tungdv
   description: An Ansible role to add users with passwordless sudo and SSH key setup.
   license: MIT
   min_ansible_version: 2.9

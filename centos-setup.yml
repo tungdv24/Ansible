@@ -1,0 +1,6 @@
+---
+- name: Run system_info role
+  hosts: all
+  become: true
+  roles:
+    - centos-setup

@@ -1,0 +1,26 @@
+- name: Ensure Zabbix directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - /etc/zabbix/scripts
+    - /etc/zabbix/zabbix_agentd.d
+
+- name: Copy scripts to /etc/zabbix/scripts
+  copy:
+    src: "scripts/"
+    dest: "/etc/zabbix/scripts/"
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Copy configuration files to /etc/zabbix/zabbix_agentd.d
+  copy:
+    src: "zabbix_agentd.d/"
+    dest: "/etc/zabbix/zabbix_agentd.d/"
+    owner: root
+    group: root
+    mode: '0644'

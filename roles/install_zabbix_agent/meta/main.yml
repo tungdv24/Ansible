@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: tungdv
+  role_name: zabbix_agent
+  description: Install Zabbix 6.0 Agent (no start/enable)
+  license: MIT
+  min_ansible_version: 2.9
+
+  platforms:
+    - name: Debian
+      versions: [11, 12]
+    - name: Ubuntu
+      versions: [20.04, 22.04]
+    - name: EL
+      versions: [7, 8, 9]
+
+dependencies: []

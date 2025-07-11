@@ -18,8 +18,8 @@ Disk Usage:
 $disk_info"
 
 # Telegram bot API URL
-token=""
-chat_id=""
+token="7751848971:AAEZPqcnonTkPhz8KzpJ85zDWNgjkZ5_jpM"
+chat_id="-1002677149636"
 
 # Send the message to Telegram
 curl -s -X POST https://api.telegram.org/bot$token/sendMessage \

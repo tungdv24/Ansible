@@ -1,0 +1,8 @@
+---
+- name: Install Zabbix agent on Debian-based systems
+  include_tasks: ubuntu.yml
+  when: ansible_os_family == "Debian"
+
+- name: Install Zabbix agent on RedHat-based systems
+  include_tasks: centos.yml
+  when: ansible_os_family == "RedHat"

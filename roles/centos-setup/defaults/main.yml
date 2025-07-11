@@ -1,0 +1,18 @@
+# Firewalld configuration (dynamically set via AWX or other methods)
+firewalld_ports:
+  individual: [22, 80, 443]          # List of individual ports
+  ranges:
+    - { start: 22, end: 23 }   # List of port ranges with start and end
+
+# Zabbix server configuration
+zabbix_server_ip: "192.168.0.1" # Update dynamically via AWX
+
+# Scripts and configuration
+script_to_run: "config_report.sh"  # The script to be copied to /mnt
+files_to_copy:
+  - { src: "scripts", dest: "/etc/zabbix/scripts" }
+  - { src: "zabbix_agentd.d", dest: "/etc/zabbix/zabbix_agentd.d" }
+
+TELEGRAM_TOKEN: "your_bot_token"
+TELEGRAM_CHAT_ID: "your_chat_id"
+
