@@ -32,21 +32,21 @@
     path: /etc/zabbix/zabbix_agentd.conf
     regexp: "^Server=.*"
     line: "Server={{ zabbix_server }}"
-    backup: yes
+    backup: no
 
 - name: Configure Zabbix Agent to use specified Zabbix ServerActive
   lineinfile:
     path: /etc/zabbix/zabbix_agentd.conf
     regexp: "^ServerActive=.*"
     line: "ServerActive={{ zabbix_server }}"
-    backup: yes
+    backup: no
 
 - name: Configure Zabbix Agent hostname
   lineinfile:
     path: /etc/zabbix/zabbix_agentd.conf
     regexp: "^Hostname=.*"
     line: "Hostname={{ inventory_hostname }}"
-    backup: yes
+    backup: no
 
 - name: Ensure Zabbix directories exist
   file:
